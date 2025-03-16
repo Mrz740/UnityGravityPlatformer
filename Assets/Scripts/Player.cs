@@ -3,19 +3,61 @@ using UnityEngine;
 public class Player : MonoBehaviour
 {
     [SerializeField] private float moveSpeed = 7.0f;
-    private void Update()
-    {
-        Vector2 InputVector = new Vector2(0, 0);
-        if (Input.GetKey(KeyCode.A))
-        {
-            InputVector.x = -1;
-        }
-        if (Input.GetKey(KeyCode.D))
-        {
-            InputVector.x = +1;
-        }
+    [SerializeField] private GameInput gameInput;
+    [SerializeField] private Rigidbody2D rb;
+    public static Player Instance {  get; private set; }
 
-        Vector3 moveDir = new Vector3(InputVector.x, InputVector.y, 0);
-        transform.position += moveDir * moveSpeed * Time.deltaTime;
+    private Vector2 moveDir;
+    private void Awake()
+    {
+        if (Instance != null)
+        {
+            Debug.LogError("There is more than 1 player instance");
+        }
+        Instance = this;
+    }
+
+    private void Start()
+    {
+        gameInput.OnJumpAction += GameInput_OnJumpAction;
+    }
+
+    private void GameInput_OnJumpAction(object sender, System.EventArgs e)
+    {
+        HandleJump();
+    }
+
+    private void FixedUpdate()
+    {
+        HandleJump();
+        HandleDirection();
+        HandleGravity();
+
+        HandleMovement();
+        Debug.Log(rb.linearVelocity.ToString());
+    }
+    private void HandleJump()
+    {
+        //Jump logic
+    }
+
+    private void HandleDirection()
+    {
+        moveDir = gameInput.GetMovementVector();
+    }
+    private void HandleGravity()
+    {
+        //Gravity logic
+    }
+
+    private void HandleMovement()
+    {
+        rb.linearVelocity = moveDir * moveSpeed;
+    }
+
+    private bool CheckCollision()
+    {
+        //Collision logic
+        return false;
     }
 }
