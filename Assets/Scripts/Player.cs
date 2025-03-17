@@ -2,12 +2,22 @@ using UnityEngine;
 
 public class Player : MonoBehaviour
 {
+    private const float GRAVITY = -9.81f;
+
     [SerializeField] private float moveSpeed = 7.0f;
     [SerializeField] private GameInput gameInput;
     [SerializeField] private Rigidbody2D rb;
+    [SerializeField] private float gravityMultiplier = 1f;
+    [SerializeField] private Vector2 boxSize;
+    [SerializeField] private float castDistance;
+    [SerializeField] private LayerMask layer;
+
     public static Player Instance {  get; private set; }
 
     private Vector2 moveDir;
+    private bool grounded;
+    private float velocity;
+
     private void Awake()
     {
         if (Instance != null)
@@ -29,12 +39,12 @@ public class Player : MonoBehaviour
 
     private void FixedUpdate()
     {
+        IsGrounded();
         HandleJump();
         HandleDirection();
         HandleGravity();
 
         HandleMovement();
-        Debug.Log(rb.linearVelocity.ToString());
     }
     private void HandleJump()
     {
@@ -47,7 +57,10 @@ public class Player : MonoBehaviour
     }
     private void HandleGravity()
     {
-        //Gravity logic
+        if (!IsGrounded())
+        {
+            moveDir = new Vector2(moveDir.x, GRAVITY * gravityMultiplier * Time.deltaTime);
+        }
     }
 
     private void HandleMovement()
@@ -55,9 +68,22 @@ public class Player : MonoBehaviour
         rb.linearVelocity = moveDir * moveSpeed;
     }
 
-    private bool CheckCollision()
+    private bool IsGrounded()
     {
-        //Collision logic
-        return false;
+        if (Physics2D.BoxCast(transform.position, boxSize, 0, -transform.up,castDistance, layer))
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+
+    //Debug Purposes
+    private void OnDrawGizmos()
+    {
+        Gizmos.DrawWireCube(transform.position - transform.up * castDistance, boxSize);
     }
 }
